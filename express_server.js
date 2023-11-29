@@ -57,15 +57,17 @@ app.get("/urls/:id", (req, res) => {
   res.redirect(longURL);
 });
 
-// Post route to update a URL
-app.get("/urls/:id", (req, res) => {
-  res.redirect("/urls/:id")
-})
-
 //Post to delete the URL 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id]
   res.redirect("/urls/");
+})
+
+// Udpate the URL
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id
+  urlDatabase[id] = req.body.longURL;
+  res.redirect("/urls/")
 })
 
 
