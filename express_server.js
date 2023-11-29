@@ -7,7 +7,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 
 function generateRandomString() {
-  return Math.random().toString(36).substring(2,8)
+  return Math.random().toString(36).substring(2,8); 
 }
 
 const urlDatabase = {
