@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+
     <!-- Bootstrap CSS -->
     <link
       rel="stylesheet"
@@ -22,8 +23,28 @@
           Short URL ID: <a href="/urls/<%= id %>"><%= id %></a>
         </p>
       </div>
-      <div class="card-footer text-muted"></div>
+
+      <div class="card-footer text-muted">
+      
+        <!-- Edit a longURL section -->
+      <div class="card-edit">
+        <h3>Edit</h3>
+          <form method="POST" action="/urls/<%= id %>/">
+            <label>New URL: </label>
+            <input 
+            type="text" 
+            name="longURL"
+            id="longURL"
+            placeholder="<%= longURL %>"
+
+            >
+            <button type="submit" class="btn btn-primary">Submit</button></form>
+        </div>
+      </div>
+
+      </div>
     </div>
+
     <!-- Bootstrap JS -->
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
