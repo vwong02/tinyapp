@@ -19,6 +19,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${ PORT }!`);
 });
@@ -83,7 +96,7 @@ app.post("/login", (req, res) => {
 // Route to logout and clear cookies
 app.post("/logout", (req, res) => {
   res.clearCookie("username")
-  res.redirect("urls")
+  res.redirect("/urls")
 })
 
 // Route for registration page
@@ -92,7 +105,16 @@ app.get("/register", (req, res) => {
   res.render("urls_registration", templateVars)
 })
 
-
+// Route to 
+app.post("/register", (req, res) => {
+  const randomUserID = generateRandomString()
+  users[randomUserID] = {
+    id: randomUserID,
+    email: req.body.email,
+    password: req.body.password
+  }
+  res.redirect("/urls/")
+})
 
 // app.get("/", (req, res) => {
 //   res.send("Hello!");
