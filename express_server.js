@@ -1,8 +1,10 @@
 const express = require("express");
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 // Tells Express app to use EJS as it's templating engine
 app.set("view engine", "ejs");
@@ -28,7 +30,7 @@ app.get("/urls.json", (req, res) => {
 
 // Route to show all the shortened URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   // Renders the urls_index.ejs and shows the list of URLs with the templateVars
   res.render("urls_index", templateVars);
 });
