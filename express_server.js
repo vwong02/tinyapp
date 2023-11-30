@@ -63,11 +63,18 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls/");
 })
 
-// Udpate the URL
+// Update the URL
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id
   urlDatabase[id] = req.body.longURL;
   res.redirect("/urls/")
+})
+
+// Route to log in and save username as a cookie
+app.post("/login", (req, res) => {
+  const username = req.body.username
+  res.cookie("username", username)
+  res.redirect("/urls")
 })
 
 
