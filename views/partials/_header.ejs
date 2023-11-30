@@ -29,19 +29,12 @@
               <!-- If no username, show the log in input field -->
         <%  } else { %>
           <div class="form-inline">
-            <form method="POST" action="/login" class="form-inline">
-              <input
-              class="form-control"
-              type="email"
-              name="username"
-              placeholder="Username"`
-              style="width: 300px; margin: 1em;"
-              >
-              <button type="submit" class="btn btn-outline-dark">Login</button>
+            <form method="GET" action="/login" class="form-inline">
+              <button type="submit" class="btn btn-outline-dark" a href="/login" >Login</button>
             </form>
-            <!-- <form method="POST" action="/register" class="form-inline">
-              <button type="submit" class="btn btn-outline-dark" >Register</button>
-            </form> -->
+            <form method="GET" action="/register" class="form-inline">
+              <button type="submit" class="btn btn-outline-dark" a href="/register">Register</button>
+            </form>
           </div>
         <% } %> 
       </div>

@@ -86,14 +86,6 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls/")
 })
 
-// Route to log in and save username as a cookie
-app.post("/login", (req, res) => {
-  const username = req.cookies["user_id"]
-  
-  res.cookie("user_id", username)
-  res.redirect("/urls")
-})
-
 // Route to logout and clear cookies
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
@@ -106,7 +98,7 @@ app.get("/register", (req, res) => {
   res.render("urls_registration", templateVars)
 })
 
-// Route to 
+// Route to send post request for submit button on registration page
 app.post("/register", (req, res) => {
   const randomUserID = generateRandomString()
   const { email, password } = req.body
@@ -128,7 +120,26 @@ app.post("/register", (req, res) => {
   res.cookie("user_id", randomUserID)
   console.log(users)
   res.redirect("/urls")
+})
 
+// Route to redirect to login page
+app.get("/login", (req, res) => {
+  const templateVars = { username: req.cookies["user_id"]}
+  res.render("urls_login", templateVars)
+})
+
+
+// Route to log in and save username as a cookie
+app.post("/login", (req, res) => {
+  const { email, password } = req.body
+  const username = req.cookies["user_id"]
+  
+  if (!email || !password) {
+    res.status(400).send("Error: email and password is required")
+  }
+
+  res.cookie("user_id", username)
+  res.redirect("/urls")
 })
 
 // app.get("/", (req, res) => {
