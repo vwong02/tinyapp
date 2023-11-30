@@ -37,12 +37,13 @@ app.get("/urls", (req, res) => {
 
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"] }
+  res.render("urls_new", templateVars);
 });
 
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -77,6 +78,12 @@ app.post("/login", (req, res) => {
   const username = req.body.username
   res.cookie("username", username)
   res.redirect("/urls")
+})
+
+// Route to logout and clear cookies
+app.post("/logout", (req, res) => {
+  res.clearCookie("username")
+  res.redirect("urls")
 })
 
 

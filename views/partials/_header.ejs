@@ -19,10 +19,13 @@
       </div>
 
       <!-- If no username, show the log in input field -->
-      <div>
+      <div class="form-group mb-2">
         <!-- If there's a username, show the logged in as info -->
         <% if (username) { %> 
           <span>Logged in as: <%= username %> </span>
+          <form method="POST" action="/logout" class="form-inline">
+          <button type="submit" class="btn btn-outline-dark">Logout</button>
+          </form>
         
       <%  } else { %>
         <form method="POST" action="/login" class="form-inline">
