@@ -18,27 +18,33 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
 
-      <!-- If no username, show the log in input field -->
-      <div class="form-group mb-2">
+      <div class="form-inline">
         <!-- If there's a username, show the logged in as info -->
-        <% if (username) { %> 
-          <span>Logged in as: <%= username %> </span>
-          <form method="POST" action="/logout" class="form-inline">
-          <button type="submit" class="btn btn-outline-dark">Logout</button>
-          </form>
-        
-      <%  } else { %>
-        <form method="POST" action="/login" class="form-inline">
-          <input
-          class="form-control"
-          type="text"
-          name="username"
-          placeholder="Username"
-          style="width: 300px; margin: 1em;"
-          >
-          <button type="submit" class="btn btn-outline-dark">Login</button></form>
-      <% } %> 
-        </div>
+          <% if (username) { %> 
+            <p>Logged in as: <%= username %> </p>
+            <form method="POST" action="/logout" class="form-inline">
+            <button type="submit" class="btn btn-outline-dark" style="margin-left: 5px">Logout</button>
+            </form>
+          </div>
+              <!-- If no username, show the log in input field -->
+        <%  } else { %>
+          <div class="form-inline">
+            <form method="POST" action="/login" class="form-inline">
+              <input
+              class="form-control"
+              type="email"
+              name="username"
+              placeholder="Username"`
+              style="width: 300px; margin: 1em;"
+              >
+              <button type="submit" class="btn btn-outline-dark">Login</button>
+            </form>
+            <!-- <form method="POST" action="/register" class="form-inline">
+              <button type="submit" class="btn btn-outline-dark" >Register</button>
+            </form> -->
+          </div>
+        <% } %> 
+      </div>
 
     </div>
   </nav>

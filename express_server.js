@@ -22,13 +22,13 @@ const urlDatabase = {
 const users = {
   userRandomID: {
     id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    email: "1@1.com",
+    password: "pw1",
   },
   user2RandomID: {
     id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
+    email: "2@2.com",
+    password: "pw2",
   },
 };
 
@@ -43,20 +43,20 @@ app.get("/urls.json", (req, res) => {
 
 // Route to show all the shortened URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { urls: urlDatabase, username: req.cookies["user_id"] };
   // Renders the urls_index.ejs and shows the list of URLs with the templateVars
   res.render("urls_index", templateVars);
 });
 
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"] }
+  const templateVars = { username: req.cookies["user_id"] }
   res.render("urls_new", templateVars);
 });
 
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["user_id"] };
   res.render("urls_show", templateVars);
 });
 
@@ -88,32 +88,47 @@ app.post("/urls/:id", (req, res) => {
 
 // Route to log in and save username as a cookie
 app.post("/login", (req, res) => {
-  const username = req.body.username
-  res.cookie("username", username)
+  const username = req.cookies["user_id"]
+  
+  res.cookie("user_id", username)
   res.redirect("/urls")
 })
 
 // Route to logout and clear cookies
 app.post("/logout", (req, res) => {
-  res.clearCookie("username")
+  res.clearCookie("user_id")
   res.redirect("/urls")
 })
 
 // Route for registration page
 app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["username"] }
+  const templateVars = { username: req.cookies["user_id"]}
   res.render("urls_registration", templateVars)
 })
 
 // Route to 
 app.post("/register", (req, res) => {
   const randomUserID = generateRandomString()
+  const { email, password } = req.body
+  if (!email || !password) {
+    res.status(400).send("Error: email and password is required")
+  }
+
+  //have to use a for in loop to iterate through objects***
+  for (user in users) {
+    if(email === users[user].email) {
+      res.status(404).send("User already exists")
+    }
+  }
   users[randomUserID] = {
     id: randomUserID,
-    email: req.body.email,
-    password: req.body.password
+    email,
+    password
   }
-  res.redirect("/urls/")
+  res.cookie("user_id", randomUserID)
+  console.log(users)
+  res.redirect("/urls")
+
 })
 
 // app.get("/", (req, res) => {
