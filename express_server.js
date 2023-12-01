@@ -55,7 +55,6 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, userID: req.cookies["user_id"], users };
   // Renders the urls_index.ejs and shows the list of URLs with the templateVars
-  console.log(users[req.cookies["user_id"]])
   res.render("urls_index", templateVars);
 });
 
@@ -67,7 +66,7 @@ app.get("/urls/new", (req, res) => {
 
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["user_id"], users};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], userID: req.cookies["user_id"], users};
   res.render("urls_show", templateVars);
 });
 
@@ -100,7 +99,7 @@ app.post("/urls/:id", (req, res) => {
 // Route to logout and clear cookies
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
-  res.redirect("/urls")
+  res.redirect("/login")
 })
 
 // Route for registration page
@@ -134,37 +133,46 @@ app.post("/register", (req, res) => {
   users[newUser.id] = newUser
   res.cookie("user_id", randomUserID)
   res.cookie("user_email", email)
+  res.cookie("user_password", password)
   console.log(users)
   res.redirect("/urls")
 })
 
-// // Route to redirect to login page
-// app.get("/login", (req, res) => {
-//   const templateVars = { username: req.cookies["user_id"]}
-//   res.render("urls_login", templateVars)
-// })
+// Route to redirect to login page
+app.get("/login", (req, res) => {
+  const templateVars = { userID: req.cookies["user_id"], users}
+  res.render("urls_login", templateVars)
+})
 
 
 // // Route to log in and save username as a cookie
-// app.post("/login", (req, res) => {
-//   const { email, password } = req.body
-//   const username = req.cookies["user_id"]
-  
-//   if (!email || !password) {
-//     res.status(400).send("Error: email and password is required")
-//   }
+app.post("/login", (req, res) => {
 
-//   for (user in users) {
-//     if(!getUserIDByEmail(email)) {
-//       res.status(404).send("No account associated with that email was found.")
-//     }
-//   }
+  const { email, password } = req.body
+  const userInfo = getUserIDByEmail(email)
 
-//   const userID = getUserIDByEmail(email)
-//   console.log(userID)
-//   res.cookie("user_id", userID.id)
-//   res.redirect("/urls")
-// })
+  if (!email || !password) {
+    res.status(400).send("Error: email and password is required")
+  }
+
+  for (user in users) {
+    if(!userInfo) {
+      res.status(403).send("No account associated with that email was found.")
+    }
+
+    if(userInfo) {
+      if(req.body.password !== userInfo.password) {
+        res.status(403).send("Password is incorrect.")
+      }
+    }
+  }
+
+  res.cookie("user_id", userInfo.id)
+  res.cookie("user_email", email)
+  res.cookie("user_password", password)
+
+  res.redirect("/urls")
+})
 
 // app.get("/", (req, res) => {
 //   res.send("Hello!");

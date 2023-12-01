@@ -16,6 +16,8 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" href="/login">Login</a>
+        <a class="nav-item nav-link" href="/register">Register</a>
       </div>
 
       <div class="form-inline">
@@ -30,10 +32,8 @@
         <%  } else { %>
           <div class="form-inline">
             <form method="GET" action="/login" class="form-inline">
-              <button type="submit" class="btn btn-outline-dark" a href="/login" >Login</button>
             </form>
             <form method="GET" action="/register" class="form-inline">
-              <button type="submit" class="btn btn-outline-dark" a href="/register">Register</button>
             </form>
           </div>
         <% } %> 
