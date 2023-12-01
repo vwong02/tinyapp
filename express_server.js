@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const app = express();
+const bcrypt = require("bcryptjs");
 const PORT = 8080; // default port 8080
 
 app.use(express.urlencoded({ extended: true }));
@@ -103,7 +104,7 @@ app.post("/urls", (req, res) => {
 
   // The user can only see their own urls
   urlDatabase[randomID] = {longURL: req.body.longURL, userID: randomID}
-  console.log(urlDatabase)
+  console.log("*** Line 107: urlDatabase ***", urlDatabase)
   res.redirect(`/urls/${ randomID }`);
 });
 
@@ -121,7 +122,7 @@ app.post("/urls/:id/delete", (req, res) => {
   if (!templateVars.userID) {
     return res.send("Please log in");
   }
-  
+
   delete urlDatabase[id]
   res.redirect("/urls/");
 })
@@ -161,11 +162,12 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const randomUserID = generateRandomString()
   const { email, password } = req.body
+  const hashedPassword = bcrypt.hashSync(req.body.password)
 
   const newUser = {
     id: randomUserID,
     email,
-    password
+    password: hashedPassword
   }
 
   if (!email || !password) {
@@ -182,8 +184,7 @@ app.post("/register", (req, res) => {
   users[newUser.id] = newUser
   res.cookie("user_id", randomUserID)
   res.cookie("user_email", email)
-  res.cookie("user_password", password)
-
+  console.log("*** Line187: users ***", users)
   res.redirect("/urls")
 })
 
@@ -202,7 +203,9 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
 
   const { email, password } = req.body
-  const userInfo = getUserIDByEmail(email)
+  console.log("*** Line 206, password", password)
+  const userInfo = getUserIDByEmail(email, users)
+  console.log("*** Line 207: userInfo from getUserIFByEmail ***", userInfo)
 
   if (!email || !password) {
     return res.status(400).send("Error: email and password is required")
@@ -214,7 +217,7 @@ app.post("/login", (req, res) => {
     }
 
     if(userInfo) {
-      if(req.body.password !== userInfo.password) {
+      if (!bcrypt.compareSync(password, userInfo.password)){
         return res.status(403).send("Password is incorrect.")
       }
     }
@@ -222,7 +225,6 @@ app.post("/login", (req, res) => {
 
   res.cookie("user_id", userInfo.id)
   res.cookie("user_email", email)
-  res.cookie("user_password", password)
 
   res.redirect("/urls")
 })
