@@ -25,8 +25,14 @@ const getUserIDByEmail = (email) => {
 }
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
 
 const users = {
@@ -61,8 +67,8 @@ app.get("/urls", (req, res) => {
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
   const templateVars = { userID: req.cookies["user_id"], users }
-  if(!req.cookies["user_id"]) {
-    res.redirect("/login")
+  if(!templateVars.userID) {
+    return res.redirect("/login")
   }
   res.render("urls_new", templateVars);
 });
@@ -70,39 +76,67 @@ app.get("/urls/new", (req, res) => {
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], userID: req.cookies["user_id"], users};
+
+  //If invalid short URL sends message that it does not exist
   if(!templateVars.longURL) {
-    res.status(404).send("No URL exists for this short URL ID")
+    return res.send("No URL exists for this short URL ID")
   }
+
+  if(!templateVars.userID) {
+    return res.send("Please log in")
+  }
+
+  // if (templateVars.userID !== templateVars.longURL) {
+  //   return res.send("You don't have permission to this list")
+  // }
   res.render("urls_show", templateVars);
 });
 
 // Generates a random id, posts the new id and longURL on /urls and redirects to the specific urls page with the new id
 app.post("/urls", (req, res) => {
-  //Must be logged in to shorten URLs
+  let randomID = generateRandomString()
+
+  //Must be logged in to see shorten URLs
   if(!req.cookies["user_id"]) {
-    return res.send("Please log in to shorten URLs")
+    res.send("Please log in to shorten URLs")
   }
-  let id = generateRandomString()
-  urlDatabase[id] = req.body.longURL
-  res.redirect(`/urls/${ id }`);
+
+  // The user can only see their own urls
+  urlDatabase[randomID] = {longURL: req.body.longURL, userID: randomID}
+  console.log(urlDatabase)
+  res.redirect(`/urls/${ randomID }`);
 });
 
 //Post to delete the URL 
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id]
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], userID: req.cookies["user_id"], users};
+
+
+  //If URL doesn't exist, send error message
+  if (!templateVars.id) {
+    return res.send("This URL does not exist");
+  }
+
+  // If user isn't logged in, print log in error
+  if (!templateVars.userID) {
+    return res.send("Please log in");
+  }
+  
+  delete urlDatabase[id]
   res.redirect("/urls/");
 })
 
 // Redirects to the longURL page
-app.get("/urls/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id]
+app.get("/u/:id", (req, res) => {
+  const id = req.params.id
+  const longURL = urlDatabase[id].longURL;
   res.redirect(longURL);
 });
 
 // Update the URL
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id
-  urlDatabase[id] = req.body.longURL;
+  urlDatabase[id].longUrl = req.body.longURL;
   res.redirect("/urls/")
 })
 
@@ -149,15 +183,16 @@ app.post("/register", (req, res) => {
   res.cookie("user_id", randomUserID)
   res.cookie("user_email", email)
   res.cookie("user_password", password)
-  console.log(users)
+
   res.redirect("/urls")
 })
+
 
 // Route to redirect to login page
 app.get("/login", (req, res) => {
   const templateVars = { userID: req.cookies["user_id"], users}
   if(req.cookies["user_id"]) {
-    res.redirect("/urls")
+    return res.redirect("/urls")
   }
   res.render("urls_login", templateVars)
 })
@@ -170,17 +205,17 @@ app.post("/login", (req, res) => {
   const userInfo = getUserIDByEmail(email)
 
   if (!email || !password) {
-    res.status(400).send("Error: email and password is required")
+    return res.status(400).send("Error: email and password is required")
   }
 
   for (user in users) {
     if(!userInfo) {
-      res.status(403).send("No account associated with that email was found.")
+      return res.status(403).send("No account associated with that email was found.")
     }
 
     if(userInfo) {
       if(req.body.password !== userInfo.password) {
-        res.status(403).send("Password is incorrect.")
+        return res.status(403).send("Password is incorrect.")
       }
     }
   }
