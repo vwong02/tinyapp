@@ -60,7 +60,7 @@ app.get("/urls", (req, res) => {
 
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { userID: req.cookies["user_id"] }
+  const templateVars = { userID: req.cookies["user_id"], users }
   res.render("urls_new", templateVars);
 });
 
@@ -99,12 +99,17 @@ app.post("/urls/:id", (req, res) => {
 // Route to logout and clear cookies
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id")
+  res.clearCookie("user_email")
+  res.clearCookie("user_password")
   res.redirect("/login")
 })
 
 // Route for registration page
-app.  get("/register", (req, res) => {
+app.get("/register", (req, res) => {
   const templateVars = { userID: req.cookies["user_id"], users}
+  if(req.cookies["user_id"]) {
+    res.redirect("/urls")
+  }
   res.render("urls_registration", templateVars)
 })
 
@@ -141,6 +146,9 @@ app.post("/register", (req, res) => {
 // Route to redirect to login page
 app.get("/login", (req, res) => {
   const templateVars = { userID: req.cookies["user_id"], users}
+  if(req.cookies["user_id"]) {
+    res.redirect("/urls")
+  }
   res.render("urls_login", templateVars)
 })
 
