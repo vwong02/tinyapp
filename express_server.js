@@ -70,6 +70,9 @@ app.get("/urls/new", (req, res) => {
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], userID: req.cookies["user_id"], users};
+  if(!templateVars.longURL) {
+    res.status(404).send("No URL exists for this short URL ID")
+  }
   res.render("urls_show", templateVars);
 });
 
@@ -84,17 +87,17 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${ id }`);
 });
 
-// Redirects to the longURL page
-app.get("/urls/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id]
-  res.redirect(longURL);
-});
-
 //Post to delete the URL 
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id]
   res.redirect("/urls/");
 })
+
+// Redirects to the longURL page
+app.get("/urls/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id]
+  res.redirect(longURL);
+});
 
 // Update the URL
 app.post("/urls/:id", (req, res) => {
