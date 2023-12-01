@@ -3,6 +3,7 @@ const cookieSession = require('cookie-session');
 const app = express();
 const bcrypt = require("bcryptjs");
 const PORT = 8080; // default port 8080
+const { getUserIDByEmail } = require('./helpers');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -17,16 +18,6 @@ app.set("view engine", "ejs");
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
 }
-
-//Function to find users by email
-const getUserIDByEmail = (email, users) => {
-  for (let userID in users) {
-    if (users[userID].email === email) {
-      return userID;
-    }
-  }
-  return false;
-};
 
 
 const urlDatabase = {
@@ -184,7 +175,7 @@ app.post("/register", (req, res) => {
   }
 
   users[newUser.id] = newUser;
-  req.session.user_id = randomUserID
+  req.session.user_id = randomUserID;
   req.session.user_email = email;
   console.log("*** Line187: users ***", users);
   res.redirect("/urls");
@@ -225,7 +216,7 @@ app.post("/login", (req, res) => {
 
   // res.cookie("user_id", userInfo.id);
   // res.cookie("user_email", email);
-  req.session.user_id = users[userInfo].id
+  req.session.user_id = users[userInfo].id;
   req.session.user_email = email;
 
   res.redirect("/urls");
@@ -247,3 +238,5 @@ app.post("/login", (req, res) => {
 // app.get("/fetch", (req, res) => {
 //   res.send(`a = ${ a }`);
 // });
+
+
