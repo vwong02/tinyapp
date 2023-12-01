@@ -61,6 +61,9 @@ app.get("/urls", (req, res) => {
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
   const templateVars = { userID: req.cookies["user_id"], users }
+  if(!req.cookies["user_id"]) {
+    res.redirect("/login")
+  }
   res.render("urls_new", templateVars);
 });
 
@@ -72,6 +75,10 @@ app.get("/urls/:id", (req, res) => {
 
 // Generates a random id, posts the new id and longURL on /urls and redirects to the specific urls page with the new id
 app.post("/urls", (req, res) => {
+  //Must be logged in to shorten URLs
+  if(!req.cookies["user_id"]) {
+    return res.send("Please log in to shorten URLs")
+  }
   let id = generateRandomString()
   urlDatabase[id] = req.body.longURL
   res.redirect(`/urls/${ id }`);
@@ -109,7 +116,7 @@ app.get("/register", (req, res) => {
   const templateVars = { userID: req.cookies["user_id"], users}
   if(req.cookies["user_id"]) {
     res.redirect("/urls")
-  }
+  } 
   res.render("urls_registration", templateVars)
 })
 
