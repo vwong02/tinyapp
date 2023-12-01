@@ -20,18 +20,23 @@
           <!-- If there's a username, show the logged in as info -->
             <% if (userID) { %> 
               <p>Logged in as: <%= users[userID].email %> </p>
+
               <form method="POST" action="/logout" class="form-inline">
+
               <button type="submit" class="btn btn-outline-dark" style="margin-left: 5px">Logout</button>
               </form>
+
             </div>
                 <!-- If no username, show the log in input field -->
           <%  } else { %>
               <form method="GET" action="/login" class="form-inline">
-                <a class="navbar-dark navbar-nav nav-link" href="/login">Login</a>
+                <a class="nav-item nav-link" href="/login">Login</a>
               </form>
+
               <form method="GET" action="/register" class="form-inline">
                 <a class="nav-item nav-link" href="/register">Register</a>
               </form>
+
           <% } %> 
         </div>
       </div>
