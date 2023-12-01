@@ -20,8 +20,8 @@
 
       <div class="form-inline">
         <!-- If there's a username, show the logged in as info -->
-          <% if (username) { %> 
-            <p>Logged in as: <%= username %> </p>
+          <% if (userID) { %> 
+            <p>Logged in as: <%= users[userID].email %> </p>
             <form method="POST" action="/logout" class="form-inline">
             <button type="submit" class="btn btn-outline-dark" style="margin-left: 5px">Logout</button>
             </form>

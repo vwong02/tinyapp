@@ -14,6 +14,16 @@ function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
 }
 
+//Function to find users by email
+const getUserIDByEmail = (email) => {
+  for (let ID in users) {
+    if (users[ID].email === email) {
+      return users[ID];
+    }
+  }
+  return false;
+}
+
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -22,12 +32,12 @@ const urlDatabase = {
 const users = {
   userRandomID: {
     id: "userRandomID",
-    email: "1@1.com",
+    email: "1@2.com",
     password: "pw1",
   },
   user2RandomID: {
     id: "user2RandomID",
-    email: "2@2.com",
+    email: "2@3.com",
     password: "pw2",
   },
 };
@@ -43,20 +53,21 @@ app.get("/urls.json", (req, res) => {
 
 // Route to show all the shortened URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["user_id"] };
+  const templateVars = { urls: urlDatabase, userID: req.cookies["user_id"], users };
   // Renders the urls_index.ejs and shows the list of URLs with the templateVars
+  console.log(users[req.cookies["user_id"]])
   res.render("urls_index", templateVars);
 });
 
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["user_id"] }
+  const templateVars = { userID: req.cookies["user_id"] }
   res.render("urls_new", templateVars);
 });
 
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["user_id"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["user_id"], users};
   res.render("urls_show", templateVars);
 });
 
@@ -93,8 +104,8 @@ app.post("/logout", (req, res) => {
 })
 
 // Route for registration page
-app.get("/register", (req, res) => {
-  const templateVars = { username: req.cookies["user_id"]}
+app.  get("/register", (req, res) => {
+  const templateVars = { userID: req.cookies["user_id"], users}
   res.render("urls_registration", templateVars)
 })
 
@@ -102,45 +113,58 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const randomUserID = generateRandomString()
   const { email, password } = req.body
+
+  const newUser = {
+    id: randomUserID,
+    email,
+    password
+  }
+
   if (!email || !password) {
     res.status(400).send("Error: email and password is required")
   }
 
   //have to use a for in loop to iterate through objects***
   for (user in users) {
-    if(email === users[user].email) {
+    if(getUserIDByEmail(email)) {
       res.status(404).send("User already exists")
     }
   }
-  users[randomUserID] = {
-    id: randomUserID,
-    email,
-    password
-  }
+
+  users[newUser.id] = newUser
   res.cookie("user_id", randomUserID)
+  res.cookie("user_email", email)
   console.log(users)
   res.redirect("/urls")
 })
 
-// Route to redirect to login page
-app.get("/login", (req, res) => {
-  const templateVars = { username: req.cookies["user_id"]}
-  res.render("urls_login", templateVars)
-})
+// // Route to redirect to login page
+// app.get("/login", (req, res) => {
+//   const templateVars = { username: req.cookies["user_id"]}
+//   res.render("urls_login", templateVars)
+// })
 
 
-// Route to log in and save username as a cookie
-app.post("/login", (req, res) => {
-  const { email, password } = req.body
-  const username = req.cookies["user_id"]
+// // Route to log in and save username as a cookie
+// app.post("/login", (req, res) => {
+//   const { email, password } = req.body
+//   const username = req.cookies["user_id"]
   
-  if (!email || !password) {
-    res.status(400).send("Error: email and password is required")
-  }
+//   if (!email || !password) {
+//     res.status(400).send("Error: email and password is required")
+//   }
 
-  res.cookie("user_id", username)
-  res.redirect("/urls")
-})
+//   for (user in users) {
+//     if(!getUserIDByEmail(email)) {
+//       res.status(404).send("No account associated with that email was found.")
+//     }
+//   }
+
+//   const userID = getUserIDByEmail(email)
+//   console.log(userID)
+//   res.cookie("user_id", userID.id)
+//   res.redirect("/urls")
+// })
 
 // app.get("/", (req, res) => {
 //   res.send("Hello!");
