@@ -56,10 +56,10 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, email: req.session.user_email, userID: req.session.user_id, users };
 
-  if(!req.session.user_id) {
+  if (!req.session.user_id) {
     // res.send('login', "Please log in to view your URLs.")
-    res.redirect("/login")
-    
+    res.redirect("/login");
+
   }
 
   res.render("urls_index", templateVars);
@@ -76,26 +76,26 @@ app.get("/urls/new", (req, res) => {
 
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
-  
+
   const id = req.params.id;
 
   //If invalid short URL sends message that it does not exist
   if (!urlDatabase[id]) {
     return res.send("No URL exists for this short URL ID");
   }
-  
+
   // If user isn't logged in, please log in
   if (!req.session.user_id) {
     return res.send("Please log in");
   }
-  
-  if(req.session.user_id !== urlDatabase[id].userID) {
+
+  if (req.session.user_id !== urlDatabase[id].userID) {
     return res.status(400).send("You don't have permssion to view this URL");
   }
-  
+
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], urls: urlDatabase, userID: req.session.user_id, email: req.session.user_email, users };
-  
-  return res.render("urls_show", templateVars)
+
+  return res.render("urls_show", templateVars);
 });
 
 // Generates a random id, posts the new id and longURL on /urls and redirects to the specific urls page with the new id
@@ -142,7 +142,7 @@ app.get("/u/:id", (req, res) => {
 // Update the URL
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
-  const user_ID = req.session.user_id
+  const user_ID = req.session.user_id;
 
   if (user_ID !== urlDatabase[id].userID) {
     return res.send("You don't have permission to edit this URL");
