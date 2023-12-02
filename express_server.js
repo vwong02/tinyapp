@@ -19,7 +19,6 @@ function generateRandomString() {
   return Math.random().toString(36).substring(2, 8);
 }
 
-
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -55,14 +54,20 @@ app.get("/urls.json", (req, res) => {
 
 // Route to show all the shortened URLs
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, userID: req.session.user_id, users };
-  // Renders the urls_index.ejs and shows the list of URLs with the templateVars
+  const templateVars = { urls: urlDatabase, email: req.session.user_email, userID: req.session.user_id, users };
+
+  if(!req.session.user_id) {
+    // res.send('login', "Please log in to view your URLs.")
+    res.redirect("/login")
+    
+  }
+
   res.render("urls_index", templateVars);
 });
 
 // Route to where users can add a new URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { userID: req.session.user_id, users };
+  const templateVars = { userID: req.session.user_id, email: req.session.user_email, users };
   if (!templateVars.userID) {
     return res.redirect("/login");
   }
@@ -71,21 +76,26 @@ app.get("/urls/new", (req, res) => {
 
 // Route to display the specific URL with a specific id and render the urls_show.ejs
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], userID: req.session.user_id, users };
+  
+  const id = req.params.id;
 
   //If invalid short URL sends message that it does not exist
-  if (!templateVars.longURL) {
+  if (!urlDatabase[id]) {
     return res.send("No URL exists for this short URL ID");
   }
-
-  if (!templateVars.userID) {
+  
+  // If user isn't logged in, please log in
+  if (!req.session.user_id) {
     return res.send("Please log in");
   }
-
-  // if (templateVars.userID !== templateVars.longURL) {
-  //   return res.send("You don't have permission to this list")
-  // }
-  res.render("urls_show", templateVars);
+  
+  if(req.session.user_id !== urlDatabase[id].userID) {
+    return res.status(400).send("You don't have permssion to view this URL");
+  }
+  
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], urls: urlDatabase, userID: req.session.user_id, email: req.session.user_email, users };
+  
+  return res.render("urls_show", templateVars)
 });
 
 // Generates a random id, posts the new id and longURL on /urls and redirects to the specific urls page with the new id
@@ -98,14 +108,14 @@ app.post("/urls", (req, res) => {
   }
 
   // The user can only see their own urls
-  urlDatabase[randomID] = { longURL: req.body.longURL, userID: randomID };
+  urlDatabase[randomID] = { longURL: req.body.longURL, userID: req.session.user_id };
   console.log("*** Line 107: urlDatabase ***", urlDatabase);
   res.redirect(`/urls/${ randomID }`);
 });
 
 //Post to delete the URL 
 app.post("/urls/:id/delete", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], userID: req.session.user_id, users };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], email: req.session.user_email, userID: req.session.user_id, users };
 
 
   //If URL doesn't exist, send error message
@@ -118,7 +128,7 @@ app.post("/urls/:id/delete", (req, res) => {
     return res.send("Please log in");
   }
 
-  delete urlDatabase[id];
+  delete urlDatabase[req.params.id];
   res.redirect("/urls/");
 });
 
@@ -132,8 +142,15 @@ app.get("/u/:id", (req, res) => {
 // Update the URL
 app.post("/urls/:id", (req, res) => {
   const id = req.params.id;
+  const user_ID = req.session.user_id
+
+  if (user_ID !== urlDatabase[id].userID) {
+    return res.send("You don't have permission to edit this URL");
+  }
+
   urlDatabase[id].longUrl = req.body.longURL;
-  res.redirect("/urls/");
+
+  res.redirect("/urls");
 });
 
 // Route to logout and clear cookies
@@ -144,7 +161,7 @@ app.post("/logout", (req, res) => {
 
 // Route for registration page
 app.get("/register", (req, res) => {
-  const templateVars = { userID: req.session.user_id, users };
+  const templateVars = { userID: req.session.user_id, email: req.session.user_email, users };
   if (req.session.user_id) {
     res.redirect("/urls");
   }
@@ -167,11 +184,9 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Error: email and password is required");
   }
 
-  //have to use a for in loop to iterate through objects***
-  for (user in users) {
-    if (getUserIDByEmail(email)) {
-      return res.status(404).send("User already exists");
-    }
+
+  if (getUserIDByEmail(email, users)) {
+    return res.status(404).send("User already exists");
   }
 
   users[newUser.id] = newUser;
@@ -184,7 +199,7 @@ app.post("/register", (req, res) => {
 
 // Route to redirect to login page
 app.get("/login", (req, res) => {
-  const templateVars = { userID: req.session.user_id, users };
+  const templateVars = { userID: req.session.user_id, email: req.session.user_email, users };
   if (templateVars.userID) {
     return res.redirect("/urls");
   }
