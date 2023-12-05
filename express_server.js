@@ -3,7 +3,7 @@ const cookieSession = require('cookie-session');
 const app = express();
 const bcrypt = require("bcryptjs");
 const PORT = 8080; // default port 8080
-const { getUserIDByEmail } = require('./helpers');
+const { getUserIDByEmail, generateRandomString } = require('./helpers');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
@@ -14,10 +14,6 @@ app.use(cookieSession({
 // Tells Express app to use EJS as it's templating engine
 app.set("view engine", "ejs");
 
-// Function to generate a random alphanumeric string that's 6 characters long
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
-}
 
 const urlDatabase = {
   b6UTxQ: {
@@ -47,9 +43,16 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${ PORT }!`);
 });
 
-// Adds route for the JSON responst with the urlDatabase data
+// Adds route for the JSON response with the urlDatabase data
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
+});
+
+// Routes to default page
+app.get("/", (req, res) => {
+  if (!req.session.user_id) {
+    return res.redirect('/login');
+  }
 });
 
 // Route to show all the shortened URLs
@@ -153,7 +156,7 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
-// Route to logout and clear cookies
+// Route to logout and clear cooxies
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/login");
@@ -236,22 +239,4 @@ app.post("/login", (req, res) => {
 
   res.redirect("/urls");
 });
-
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-
-// app.get("/set", (req, res) => {
-//   const a = 1;
-//   res.send(`a = ${ a }`);
-// });
-
-// app.get("/fetch", (req, res) => {
-//   res.send(`a = ${ a }`);
-// });
-
 
