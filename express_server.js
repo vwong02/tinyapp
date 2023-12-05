@@ -52,6 +52,8 @@ app.get("/urls.json", (req, res) => {
 app.get("/", (req, res) => {
   if (!req.session.user_id) {
     return res.redirect('/login');
+  } else {
+    res.redirect('/urls')
   }
 });
 
@@ -60,12 +62,10 @@ app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, email: req.session.user_email, userID: req.session.user_id, users };
 
   if (!req.session.user_id) {
-    // res.send('login', "Please log in to view your URLs.")
     res.redirect("/login");
-
+  } else {
+    res.render("urls_index", templateVars);
   }
-
-  res.render("urls_index", templateVars);
 });
 
 // Route to where users can add a new URL
@@ -103,23 +103,22 @@ app.get("/urls/:id", (req, res) => {
 
 // Generates a random id, posts the new id and longURL on /urls and redirects to the specific urls page with the new id
 app.post("/urls", (req, res) => {
-  let randomID = generateRandomString();
+  let id = generateRandomString();
 
   //Must be logged in to see shorten URLs
   if (!req.session.user_id) {
     res.send("Please log in to shorten URLs");
+  
+    // The user can only see their own urls;
+  } else {
+    urlDatabase[id] = { longURL: req.body.longURL, userID: req.session.user_id };
+    res.redirect(`/urls/${ id }`);
   }
-
-  // The user can only see their own urls
-  urlDatabase[randomID] = { longURL: req.body.longURL, userID: req.session.user_id };
-  console.log("*** Line 107: urlDatabase ***", urlDatabase);
-  res.redirect(`/urls/${ randomID }`);
 });
 
 //Post to delete the URL 
 app.post("/urls/:id/delete", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], email: req.session.user_email, userID: req.session.user_id, users };
-
 
   //If URL doesn't exist, send error message
   if (!templateVars.id) {
@@ -137,9 +136,24 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Redirects to the longURL page
 app.get("/u/:id", (req, res) => {
-  const id = req.params.id;
-  const longURL = urlDatabase[id].longURL;
-  res.redirect(longURL);
+
+  const id = req.params.id;  
+  
+  if(urlDatabase[id]) {
+    let longURL = urlDatabase[id].longURL;
+    if(!longURL.includes("http://" || "https://")) {
+      longURL = `https://${longURL}`
+    }
+    res.redirect(longURL);
+  } else {
+    res.status(404).send("URL not found");
+  }
+
+  console.log("*** Line 147: urlDatabase:", urlDatabase)
+  console.log("**LINE 148 - id:", id)
+  console.log("*** Line 149: urlDatabase[id]:", urlDatabase[id])
+  console.log("***LINE 150: longURL", longURL)
+  
 });
 
 // Update the URL
@@ -151,7 +165,7 @@ app.post("/urls/:id", (req, res) => {
     return res.send("You don't have permission to edit this URL");
   }
 
-  urlDatabase[id].longUrl = req.body.longURL;
+  urlDatabase[id].longURL = req.body.longURL;
 
   res.redirect("/urls");
 });
@@ -195,7 +209,7 @@ app.post("/register", (req, res) => {
   users[newUser.id] = newUser;
   req.session.user_id = randomUserID;
   req.session.user_email = email;
-  console.log("*** Line187: users ***", users);
+  // console.log("*** Line207 - users:", users);
   res.redirect("/urls");
 });
 
