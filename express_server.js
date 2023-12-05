@@ -148,12 +148,6 @@ app.get("/u/:id", (req, res) => {
   } else {
     res.status(404).send("URL not found");
   }
-
-  console.log("*** Line 147: urlDatabase:", urlDatabase)
-  console.log("**LINE 148 - id:", id)
-  console.log("*** Line 149: urlDatabase[id]:", urlDatabase[id])
-  console.log("***LINE 150: longURL", longURL)
-  
 });
 
 // Update the URL
@@ -209,7 +203,6 @@ app.post("/register", (req, res) => {
   users[newUser.id] = newUser;
   req.session.user_id = randomUserID;
   req.session.user_email = email;
-  // console.log("*** Line207 - users:", users);
   res.redirect("/urls");
 });
 
